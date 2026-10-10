@@ -71,8 +71,32 @@ let cipher_char _config _c =
           let output_char = Char.chr (output_rot + Char.code 'A') in
           map_plug _config.plugboard output_char
 
+
+let next_letter c =
+  if c = 'Z' then 'A'
+  else Char.chr (Char.code c + 1)
+
 let step _config =
-  failwith "Unimplemented"
+    let reversed_rotors = List.rev _config.rotors in
+      match reversed_rotors with
+      | [] -> _config
+      | h :: m :: t :: [] -> if h.top_letter = h.rotor.turnover then 
+          let new_rotor_one = { h with top_letter = next_letter h.top_letter } in
+            let new_rotor_two = { m with top_letter = next_letter m.top_letter } in
+              let new_rotors = List.rev (new_rotor_one :: new_rotor_two :: t) in
+                  { _config with rotors = new_rotors }
+          
+          else if m.top_letter = m.rotor.turnover then 
+          let new_rotor_one = { h with top_letter = next_letter h.top_letter } in
+            let new_rotor_two = { m with top_letter = next_letter m.top_letter } in
+              let new_rotor_three = { t with top_letter = next_letter t.top_letter } in
+                let new_rotors = List.rev (new_rotor_one :: new_rotor_two :: new_rotor_three) in
+                    { _config with rotors = new_rotors }
+
+          else
+            let new_rotor = { h with top_letter = next_letter h.top_letter } in
+              let new_rotor_one = List.rev (new_rotor_one :: m :: t) in
+                  { _config with rotors = new_rotors }
 
 let cipher _config _s =
   failwith "Unimplemented"
