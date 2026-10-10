@@ -22,6 +22,10 @@ let plugboard_test name plugs input expected =
   name >:: fun _ ->
     assert_equal expected (map_plug plugs input)
 
+let cipher_char_test name config input expected =
+  name >:: fun _ ->
+    assert_equal expected (cipher_char config input)
+
 
 (* ==================== Index Suite ==================== *)
 
@@ -131,6 +135,62 @@ let plugboard_suite =
       [('Y', 'X'); ('Z', 'A')] 'X' 'Y';
   ]
 
+(* ==================== cipher_suite ==================== *)
+
+let cipher_suite =
+  let identity_config = {
+    refl = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    rotors = [];
+    plugboard = [];
+  } in
+
+  let historical_config = {
+    refl = "YRUHQSLDPXNGOKMIEBFZCWVJAT";
+    rotors = [
+      { rotor = { wiring = "EKMFLGDQVZNTOWYHXUSPAIBRCJ"; turnover = 'Q' };
+        top_letter = 'A' };
+
+      { rotor = { wiring = "AJDKSIRUXBLHWTMCQGZNPYFVOE"; turnover = 'E' };
+        top_letter = 'A' };
+
+      { rotor = { wiring = "BDFHJLCPRTXVZNYEIWGAKMUSQO"; turnover = 'V' };
+        top_letter = 'A' };
+    ];
+    plugboard = [];
+  } in
+
+  "Cipher Char Tests" >::: [
+    (* Identity: no rotors, no plugboard *)
+    cipher_char_test "Identity: A -> A"
+      identity_config 'A' 'A';
+
+    cipher_char_test "Identity: B -> B"
+      identity_config 'B' 'B';
+
+    cipher_char_test "Identity: Z -> Z"
+      identity_config 'Z' 'Z';
+
+    (* Historical Example *)
+    cipher_char_test "Historical: G -> P"
+      historical_config 'G' 'P';
+
+    (* Additional Historical Tests *)
+    cipher_char_test "Historical: A -> U"
+      historical_config 'A' 'U';
+
+    cipher_char_test "Historical: B -> E"
+      historical_config 'B' 'E';
+
+    cipher_char_test "Historical: C -> J"
+      historical_config 'C' 'J';
+
+    cipher_char_test "Historical: P -> G"
+      historical_config 'P' 'G';
+
+    cipher_char_test "Historical: Z -> H"
+      historical_config 'Z' 'H';
+  ]
+
 
 (* ==================== Main Suite ==================== *)
 
@@ -140,6 +200,7 @@ let suite =
     rotor_suite;
     reflector_suite;
     plugboard_suite;
+    cipher_suite;
   ]
 
 let () = run_test_tt_main suite

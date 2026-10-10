@@ -44,10 +44,32 @@ let rec map_plug _plugs _c =
                   else map_plug t _c
 
 
+let rec map_rotors_l_to_r rotors input =
+  match rotors with
+  | [] -> input
+  | r :: rest -> let rotor_done = map_l_to_r r.rotor.wiring r.top_letter input in
+                          map_rotors_l_to_r rest rotor_done 
 
+let map_rotors_r_to_l rotors input =
+  let rec aux remaining current =
+    match remaining with
+    | [] -> current
+    | r :: rest ->
+        let rotor_done =
+          map_r_to_l r.rotor.wiring r.top_letter current
+        in
+        aux rest rotor_done
+  in
+  aux (List.rev rotors) input
 
-let cipher_char _config _c =
-  
+let cipher_char _config _c =  
+  let plugged = map_plug _config.plugboard _c in
+    let input_pos = index plugged in
+      let input_rot = map_rotors_r_to_l _config.rotors input_pos in
+       let reflected  = map_refl _config.refl input_rot in
+        let output_rot = map_rotors_l_to_r _config.rotors reflected  in 
+          let output_char = Char.chr (output_rot + Char.code 'A') in
+          map_plug _config.plugboard output_char
 
 let step _config =
   failwith "Unimplemented"
