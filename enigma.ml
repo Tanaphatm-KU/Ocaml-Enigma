@@ -32,7 +32,9 @@ let map_l_to_r _wiring _top_letter _input_pos =
         in result
 
 let map_refl _wiring _input_pos =
-  failwith "Unimplemented"
+  let addup = ((_input_pos) + 26 ) mod 26 in
+    let result = codeToInt _wiring.[addup] 
+      in result  
 
 let map_plug _plugs _c =
   failwith "Unimplemented"
