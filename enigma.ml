@@ -14,14 +14,22 @@ type config = {
   plugboard : (char * char) list;
 }
 
+
+let codeToInt x = Char.code x - 65
+
 let index _c =
-  Char.code _c - 65
+  codeToInt _c
 
 let map_r_to_l _wiring _top_letter _input_pos =
-  failwith "Unimplemented"
+  let addup = ((codeToInt _top_letter + _input_pos) + 26 ) mod 26 in
+    let result = ((codeToInt _wiring.[addup] - codeToInt _top_letter) + 26 ) mod 26 
+      in result
 
 let map_l_to_r _wiring _top_letter _input_pos =
-  failwith "Unimplemented"
+  let addup = ((codeToInt _top_letter + _input_pos) + 26 ) mod 26 in
+    let alphabet =  Char.chr (65 + addup) in
+      let result = (((String.index _wiring alphabet) - codeToInt _top_letter) + 26) mod 26 
+        in result
 
 let map_refl _wiring _input_pos =
   failwith "Unimplemented"
