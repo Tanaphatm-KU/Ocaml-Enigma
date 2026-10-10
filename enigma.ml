@@ -36,11 +36,18 @@ let map_refl _wiring _input_pos =
     let result = codeToInt _wiring.[addup] 
       in result  
 
-let map_plug _plugs _c =
-  failwith "Unimplemented"
+let rec map_plug _plugs _c =
+  match _plugs with
+  | [] -> _c
+  | (a,b) :: t -> if _c = a then b
+                  else if _c = b then a
+                  else map_plug t _c
+
+
+
 
 let cipher_char _config _c =
-  failwith "Unimplemented"
+  
 
 let step _config =
   failwith "Unimplemented"
