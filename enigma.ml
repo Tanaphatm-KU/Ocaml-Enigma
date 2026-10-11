@@ -77,26 +77,51 @@ let next_letter c =
   else Char.chr (Char.code c + 1)
 
 let step _config =
-    let reversed_rotors = List.rev _config.rotors in
-      match reversed_rotors with
-      | [] -> _config
-      | h :: m :: t :: [] -> if h.top_letter = h.rotor.turnover then 
-          let new_rotor_one = { h with top_letter = next_letter h.top_letter } in
-            let new_rotor_two = { m with top_letter = next_letter m.top_letter } in
-              let new_rotors = List.rev (new_rotor_one :: new_rotor_two :: t) in
-                  { _config with rotors = new_rotors }
-          
-          else if m.top_letter = m.rotor.turnover then 
-          let new_rotor_one = { h with top_letter = next_letter h.top_letter } in
-            let new_rotor_two = { m with top_letter = next_letter m.top_letter } in
-              let new_rotor_three = { t with top_letter = next_letter t.top_letter } in
-                let new_rotors = List.rev (new_rotor_one :: new_rotor_two :: new_rotor_three) in
-                    { _config with rotors = new_rotors }
+  let reversed_rotors = List.rev _config.rotors in
 
+  let rec step_rotors rotors right_turnover =
+    match rotors with
+    | [] -> []
+
+    | [r] ->
+        let new_r =
+          if right_turnover then
+            { r with top_letter = next_letter r.top_letter }
           else
-            let new_rotor = { h with top_letter = next_letter h.top_letter } in
-              let new_rotor_one = List.rev (new_rotor_one :: m :: t) in
-                  { _config with rotors = new_rotors }
+            r
+        in
+        [new_r]
+
+    | r :: rest ->
+        let current_turnover =
+          r.top_letter = r.rotor.turnover
+        in
+
+        let new_r =
+          if right_turnover || current_turnover then
+            { r with top_letter = next_letter r.top_letter }
+          else
+            r
+        in
+
+        new_r :: step_rotors rest current_turnover
+        in
+
+    match reversed_rotors with
+    | [] -> _config
+    | rightmost :: rest ->
+        let new_rightmost =
+          { rightmost with
+            top_letter = next_letter rightmost.top_letter }
+        in
+
+        let new_rotors =
+          List.rev
+            (new_rightmost :: step_rotors rest
+              (rightmost.top_letter = rightmost.rotor.turnover))
+        in
+
+        { _config with rotors = new_rotors }
 
 let cipher _config _s =
   failwith "Unimplemented"

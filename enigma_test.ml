@@ -26,6 +26,14 @@ let cipher_char_test name config input expected =
   name >:: fun _ ->
     assert_equal expected (cipher_char config input)
 
+let step_test name config expected =
+  name >:: fun _ ->
+    let new_config = step config in
+    let actual =
+      List.map (fun r -> r.top_letter) new_config.rotors
+    in
+    assert_equal expected actual
+
 
 (* ==================== Index Suite ==================== *)
 
@@ -192,6 +200,94 @@ let cipher_suite =
   ]
 
 
+(* ==================== Step Suite ==================== *)
+
+
+let step_suite =
+  let rotor_I = {
+    wiring = "EKMFLGDQVZNTOWYHXUSPAIBRCJ";
+    turnover = 'Q';
+  } in
+
+  let rotor_II = {
+    wiring = "AJDKSIRUXBLHWTMCQGZNPYFVOE";
+    turnover = 'E';
+  } in
+
+  let rotor_III = {
+    wiring = "BDFHJLCPRTXVZNYEIWGAKMUSQO";
+    turnover = 'V';
+  } in
+
+  let make_config a b c = {
+    refl = "YRUHQSLDPXNGOKMIEBFZCWVJAT";
+    rotors = [
+      { rotor = rotor_III; top_letter = a };
+      { rotor = rotor_II; top_letter = b };
+      { rotor = rotor_I; top_letter = c };
+    ];
+    plugboard = [];
+  } in
+
+  "Stepping Tests" >::: [
+
+    (* Rule 1: Rightmost rotor always steps *)
+    step_test "AAA -> AAB"
+      (make_config 'A' 'A' 'A')
+      ['A'; 'A'; 'B'];
+
+    step_test "AAB -> AAC"
+      (make_config 'A' 'A' 'B')
+      ['A'; 'A'; 'C'];
+
+    (* Wrap around Z -> A *)
+    step_test "AAZ -> AAA"
+      (make_config 'A' 'A' 'Z')
+      ['A'; 'A'; 'A'];
+
+    (* Rule 2: Rightmost turnover *)
+    step_test "KDQ -> KER"
+      (make_config 'K' 'D' 'Q')
+      ['K'; 'E'; 'R'];
+
+    step_test "VDQ -> VER"
+      (make_config 'V' 'D' 'Q')
+      ['V'; 'E'; 'R'];
+
+    (* Rule 2: Middle rotor turnover *)
+    step_test "KER -> LFS"
+      (make_config 'K' 'E' 'R')
+      ['L'; 'F'; 'S'];
+
+    step_test "VER -> WFS"
+      (make_config 'V' 'E' 'R')
+      ['W'; 'F'; 'S'];
+
+    (* Rule 3: All rotors step, but only once *)
+    step_test "KEQ -> LFR"
+      (make_config 'K' 'E' 'Q')
+      ['L'; 'F'; 'R'];
+
+    (* Leftmost turnover has no effect *)
+    step_test "VAA -> VAB"
+      (make_config 'V' 'A' 'A')
+      ['V'; 'A'; 'B'];
+
+    (* Only one rotor *)
+    step_test "Single Rotor: A -> B"
+      { (make_config 'A' 'A' 'A') with
+        rotors = [
+          { rotor = rotor_I; top_letter = 'A' }
+        ]
+      }
+      ['B'];
+
+    (* No rotors *)
+    step_test "Empty Rotors"
+      { (make_config 'A' 'A' 'A') with rotors = [] }
+      [];
+  ]
+
 (* ==================== Main Suite ==================== *)
 
 let suite =
@@ -201,6 +297,7 @@ let suite =
     reflector_suite;
     plugboard_suite;
     cipher_suite;
+    step_suite;
   ]
 
 let () = run_test_tt_main suite
