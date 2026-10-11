@@ -138,4 +138,4 @@ let cipher _config _s =
   in
   aux _config (toList _s)
 
-let hours_worked = 0
+let hours_worked = 14
