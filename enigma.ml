@@ -14,9 +14,10 @@ type config = {
   plugboard : (char * char) list;
 }
 
-
+(** [codeToInt x] turn character into int*)
 let codeToInt x = Char.code x - 65
 
+(** [index c] turn character [c] into int*)
 let index _c =
   codeToInt _c
 
@@ -71,7 +72,8 @@ let cipher_char _config _c =
           let output_char = Char.chr (output_rot + Char.code 'A') in
           map_plug _config.plugboard output_char
 
-
+(** [next_letter c] is the letter following [c],
+    wrapping ['Z'] around to ['A']. *)
 let next_letter c =
   if c = 'Z' then 'A'
   else Char.chr (Char.code c + 1)
@@ -123,7 +125,17 @@ let step _config =
 
         { _config with rotors = new_rotors }
 
+(** [toList s] turn string [s] into list of charcters*)
+let toList s = List.init (String.length s) (String.get s)
+
 let cipher _config _s =
-  failwith "Unimplemented"
+  let rec aux config remain =
+    match remain with
+    | [] -> ""
+    | h :: t -> let new_config = step config in
+                    let encrypted = cipher_char new_config h in 
+                      String.make 1 encrypted ^ aux new_config t
+  in
+  aux _config (toList _s)
 
 let hours_worked = 0
